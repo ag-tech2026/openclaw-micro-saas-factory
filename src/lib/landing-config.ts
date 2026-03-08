@@ -38,6 +38,7 @@ export const landingPageConfigSchema = z.object({
         features: z.array(z.string().max(200)),
         highlighted: z.boolean().optional().default(false),
         ctaText: z.string().max(50).optional().default('Get Started'),
+        polarPlanId: z.string().optional(), // Polar plan ID for this specific plan
       })
     ).min(1).max(5),
     polarEnabled: z.boolean().optional().default(false),

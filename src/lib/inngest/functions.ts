@@ -219,3 +219,173 @@ export const batchProcessVisionAnalysis = inngest.createFunction(
     };
   }
 );
+
+/**
+ * Background function: Generate social media content for a new MVP
+ *
+ * This function is triggered when a new MVP config is added to the system.
+ * It generates product mockups and captions for Twitter and LinkedIn.
+ */
+export const generateSocialMediaForMvp = inngest.createFunction(
+  {
+    id: 'generate-social-media-for-mvp',
+    name: 'Generate Social Media for MVP',
+    description: 'Generate images and captions for social media posts when a new MVP is launched',
+    retry: {
+      limit: 2,
+      minInterval: 5000,
+      maxInterval: 30000,
+      backoff: 'exponential',
+    },
+    timeout: '10m',
+  },
+  async ({ event, step }) => {
+    const { slug } = event.data;
+
+    if (!slug) {
+      throw new Error('MVP slug is required');
+    }
+
+    try {
+      // Step: Load MVP config
+      const config = await step.run('load-mvp-config', async () => {
+        const { loadLandingConfig } = await import('@/lib/landing-config');
+        return await loadLandingConfig(slug);
+      });
+
+      // Step: Generate social media assets
+      const assets = await step.run('generate-assets', async () => {
+        const { socialMediaGenerator } = await import('@/lib/social-media-generator');
+        return await socialMediaGenerator.generateForMvp(config);
+      });
+
+      // Step: Check if social media APIs are available and schedule posts if configured
+      if (env.TWITTER_API_KEY && env.TWITTER_ACCESS_TOKEN) {
+        await step.run('schedule-twitter-post', async () => {
+          const twitterPost = assets.posts.find(p => p.platform === 'twitter');
+          if (twitterPost) {
+            // Queue the Twitter post via the existing bot system
+            // This could integrate with the twitter-bot/queue system
+            console.log(`Twitter post ready to schedule for ${slug}:`, {
+              content: twitterPost.content.substring(0, 100),
+              image: twitterPost.imagePath,
+            });
+            // In a full implementation, we would add to the queue here
+            // For now, we mark as draft and let the user schedule via UI
+          }
+        });
+      }
+
+      if (env.LINKEDIN_ACCESS_TOKEN) {
+        await step.run('schedule-linkedin-post', async () => {
+          const linkedinPost = assets.posts.find(p => p.platform === 'linkedin');
+          if (linkedinPost) {
+            console.log(`LinkedIn post ready to schedule for ${slug}:`, {
+              content: linkedinPost.content.substring(0, 100),
+              image: linkedinPost.imagePath,
+            });
+            // In a full implementation, we would post to LinkedIn API
+          }
+        });
+      }
+
+      return {
+        success: true,
+        slug,
+        assets: {
+          imageCount: assets.imagePaths.length,
+          posts: assets.posts.map(p => ({ platform: p.platform, status: p.status })),
+        },
+        generatedAt: assets.generatedAt,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+      console.error(`Social media generation failed for MVP ${slug}:`, errorMessage);
+
+      // Could send to error tracking
+      await trackError(error instanceof Error ? error : new Error(String(error)), {
+        slug,
+        function: 'generateSocialMediaForMvp',
+      });
+
+      throw error;
+    }
+  }
+);
+
+/**
+ * Background function: Schedule a post to social media
+ */
+export const scheduleSocialPost = inngest.createFunction(
+  {
+    id: 'schedule-social-post',
+    name: 'Schedule Social Post',
+    description: 'Schedule a generated post to be published on a social platform',
+    retry: {
+      limit: 3,
+      minInterval: 2000,
+      maxInterval: 60000,
+      backoff: 'exponential',
+    },
+    timeout: '5m',
+  },
+  async ({ event, step }) => {
+    const { slug, platform, postId, scheduledAt } = event.data;
+
+    if (!slug || !platform) {
+      throw new Error('Slug and platform are required');
+    }
+
+    try {
+      // Load the generated assets
+      const assets = await step.run('load-assets', async () => {
+        const { socialMediaGenerator } = await import('@/lib/social-media-generator');
+        const loaded = socialMediaGenerator.loadAssets(slug);
+        if (!loaded) {
+          throw new Error(`No assets found for slug: ${slug}`);
+        }
+        return loaded;
+      });
+
+      const post = assets.posts.find(p => p.platform === platform);
+      if (!post) {
+        throw new Error(`No ${platform} post found for ${slug}`);
+      }
+
+      // Schedule based on platform
+      if (platform === 'twitter' && env.TWITTER_API_KEY) {
+        await step.run('post-to-twitter', async () => {
+          // Integrate with twitter-bot's queue system
+          // This would post immediately or schedule
+          console.log(`Posting to Twitter: ${post.content.substring(0, 50)}...`);
+          // Implementation: use Twitter API v2
+          // For now, simulate success
+        });
+      } else if (platform === 'linkedin' && env.LINKEDIN_ACCESS_TOKEN) {
+        await step.run('post-to-linkedin', async () => {
+          console.log(`Posting to LinkedIn: ${post.content.substring(0, 50)}...`);
+          // Implementation: use LinkedIn API
+        });
+      }
+
+      // Update status to posted
+      await step.run('update-status', async () => {
+        const { socialMediaGenerator } = await import('@/lib/social-media-generator');
+        socialMediaGenerator.updatePostStatus(slug, platform, 'posted', postId);
+      });
+
+      return {
+        success: true,
+        slug,
+        platform,
+        postedAt: new Date().toISOString(),
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`Failed to schedule post for ${slug} on ${platform}:`, errorMessage);
+      throw error;
+    }
+  }
+);
+

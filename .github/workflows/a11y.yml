@@ -1,0 +1,114 @@
+name: Accessibility Tests
+
+on:
+  pull_request:
+    branches: [main, master, develop]
+  push:
+    branches: [main, master]
+
+jobs:
+  a11y:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers and dependencies
+        run: |
+          npx playwright install --with-deps chromium
+
+      - name: Build project
+        run: npm run build
+
+      - name: Start production server
+        run: |
+          npm start &
+        env:
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+        timeout-minutes: 5
+
+      - name: Wait for server to be ready
+        run: |
+          for i in $(seq 1 30); do
+            if curl -s http://localhost:3000 > /dev/null; then
+              echo "Server ready"
+              break
+            fi
+            sleep 2
+          done
+
+      - name: Run accessibility tests
+        run: npm run a11y
+        env:
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+        continue-on-error: false
+
+      - name: Upload accessibility reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a11y-reports
+          path: reports/
+          retention-days: 14
+
+      - name: Annotate PR with a11y results
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const reportsDir = 'reports';
+            const summaryFiles = fs.existsSync(reportsDir)
+              ? fs.readdirSync(reportsDir).filter(f => f.startsWith('a11y-summary-') && f.endsWith('.json'))
+              : [];
+
+            if (summaryFiles.length === 0) {
+              core.setFailed('No accessibility report found');
+              return;
+            }
+
+            const latestSummary = summaryFiles.sort().pop();
+            const summary = JSON.parse(fs.readFileSync(path.join(reportsDir, latestSummary), 'utf8'));
+
+            const totalViolations = summary.reduce((sum, s) => sum + s.totalViolations, 0);
+            const failedPages = summary.filter(s => s.totalViolations > 0).length;
+
+            const body = `
+            ## Accessibility Test Results
+
+            ✅ **Pages tested:** ${summary.length}
+            ⚠️ **Pages with violations:** ${failedPages}
+            📊 **Total violations:** ${totalViolations}
+
+            ${summary.map(s => `
+            ### ${s.page}
+            - **Violations:** ${s.totalViolations}
+              ${s.violations.map(v => `\n  - **${v.impact.toUpperCase()}:** ${v.help} (\`${v.id}\`)`).join('')}
+            `).join('\n')}
+
+            📎 [Download full report](./a11y-reports/)
+            `;
+
+            try {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            } catch (error) {
+              console.error('Failed to create comment:', error);
+            }

@@ -1,0 +1,120 @@
+slug: "dev-tools"
+name: "DevTools Pro"
+tagline: "Supercharge your development workflow"
+description: "DevTools Pro is the ultimate toolkit for developers. Debug faster, test smarter, and deploy with confidence using our comprehensive suite of development tools.
+
+hero:
+  headline: "Build Better Software with DevTools Pro"
+  subheadline: "Everything you need to develop, debug, and deploy like a pro. Join 10,000+ developers."
+  ctaText: "Download Now"
+  ctaUrl: "https://example.com/download"
+
+features:
+  - title: "Intelligent Debugger"
+    description: "Catch bugs before they reach production with AI-powered debugging and real-time error detection."
+    icon: "🐛"
+  - title: "Performance Profiler"
+    description: "Identify bottlenecks and optimize your application's performance with detailed profiling metrics."
+    icon: "⚡"
+  - title: "API Testing Suite"
+    description: "Test your APIs with our comprehensive testing tools. Automate tests and ensure reliability."
+    icon: "🔧"
+  - title: "Code Coverage"
+    description: "Get complete code coverage reports. Know exactly which lines are tested and which need attention."
+    icon: "📈"
+  - title: "Team Collaboration"
+    description: "Share debugging sessions and collaborate on code reviews in real-time with your team."
+    icon: "👥"
+  - title: "CI/CD Integration"
+    description: "Seamlessly integrate with GitHub Actions, GitLab CI, Jenkins, and more."
+    icon: "🔄"
+
+pricing:
+  enabled: true
+  currency: "USD"
+  polarEnabled: true
+  polarProductId: "prod_example123"
+  plans:
+    - name: "Community"
+      price: 0
+      period: "/month"
+      description: "Free for open source and personal projects"
+      features:
+        - "Basic debugging tools"
+        - "Unlimited public repositories"
+        - "Community support"
+        - "Code coverage reports"
+      highlighted: false
+      ctaText: "Get Started"
+    - name: "Pro"
+      price: 19
+      period: "/month"
+      description: "For professional developers and small teams"
+      features:
+        - "Everything in Community"
+        - "Advanced debugging tools"
+        - "Private repositories"
+        - "Priority support"
+        - "CI/CD integrations"
+        - "Performance profiler"
+      highlighted: true
+      ctaText: "Start Free Trial"
+    - name: "Enterprise"
+      price: 49
+      period: "/month"
+      description: "For large teams and organizations"
+      features:
+        - "Everything in Pro"
+        - "Unlimited team members"
+        - "Dedicated support"
+        - "Custom integrations"
+        - "SLA guarantee"
+        - "On-premise deployment"
+        - "SSO & SAML"
+      highlighted: false
+      ctaText: "Contact Sales"
+
+faq:
+  - question: "What's the difference between Community and Pro?"
+    answer: "Community is free and great for open source projects. Pro adds advanced debugging, private repositories, priority support, and CI/CD integrations."
+  - question: "Can I use DevTools Pro with my existing CI/CD pipeline?"
+    answer: "Yes! DevTools Pro integrates with all major CI/CD platforms including GitHub Actions, GitLab CI, Jenkins, CircleCI, and Azure Pipelines."
+  - question: "Is there a free trial for paid plans?"
+    answer: "Yes, all paid plans come with a 14-day free trial. No credit card required to start."
+  - question: "How do you handle security for my code?"
+    answer: "We take security seriously. All data is encrypted at rest and in transit. We're SOC 2 Type II compliant and offer on-premise deployment for Enterprise customers."
+
+footer:
+  tagline: "Tools developers love, trusted by thousands."
+  links:
+    - label: "Features"
+      url: "https://example.com/features"
+    - label: "Pricing"
+      url: "https://example.com/pricing"
+    - label: "Documentation"
+      url: "https://example.com/docs"
+    - label: "API Reference"
+      url: "https://example.com/api"
+    - label: "Blog"
+      url: "https://example.com/blog"
+    - label: "Careers"
+      url: "https://example.com/careers"
+    - label: "Privacy"
+      url: "https://example.com/privacy"
+    - label: "Terms"
+      url: "https://example.com/terms"
+  socialLinks:
+    - platform: "github"
+      url: "https://github.com/devtools-pro"
+    - platform: "twitter"
+      url: "https://twitter.com/devtoolspro"
+    - platform: "linkedin"
+      url: "https://linkedin.com/company/devtools-pro"
+    - platform: "discord"
+      url: "https://discord.gg/devtools"
+  copyright: "© {year} DevTools Pro, Inc. All rights reserved."
+
+seo:
+  title: "DevTools Pro - The Ultimate Developer Toolkit"
+  description: "DevTools Pro helps developers debug, test, and deploy with confidence. Join 10,000+ developers today."
+  image: "https://example.com/og-image.jpg"

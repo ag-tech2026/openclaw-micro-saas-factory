@@ -1,5 +1,7 @@
 # Next.js MVP Boilerplate
 
+[![Accessibility Tests](https://github.com/your-username/your-repo/actions/workflows/a11y.yml/badge.svg)](https://github.com/your-username/your-repo/actions/workflows/a11y.yml)
+
 A production-ready Next.js 15 boilerplate with environment configuration, error monitoring, analytics, and comprehensive documentation for rapid MVP deployment.
 
 ## Features
@@ -279,6 +281,60 @@ npx eslint . --ext .ts,.tsx --fix
 
 - Last 2 versions of Chrome, Firefox, Safari, Edge
 - IE not supported
+
+## Accessibility Testing
+
+This project includes automated accessibility testing using axe-core and Playwright.
+
+### Running Tests Locally
+
+```bash
+# Run accessibility tests against critical pages
+npm run a11y
+```
+
+This will scan the following pages:
+- `/` (homepage)
+- `/sign-in` (sign-in)
+- `/admin` (admin dashboard)
+- `/calculator` (calculator)
+
+Tests run against `http://localhost:3000` by default. To test a different URL:
+
+```bash
+NEXT_PUBLIC_APP_URL=https://your-production-url.com npm run a11y
+```
+
+### Results
+
+- **Console output**: Violations summary
+- **HTML report**: `reports/a11y-report-[timestamp].html`
+- **JSON summary**: `reports/a11y-summary-[timestamp].json`
+
+### CI/CD Integration
+
+Accessibility tests run automatically on every PR and push to main via GitHub Actions. The build fails if:
+- Critical violations > 0
+- Serious violations > 0
+- Moderate violations > 10
+- Minor violations > 20
+
+Thresholds can be adjusted in `scripts/a11y-test.ts`.
+
+Reports are uploaded as artifacts for each run, and results are posted as PR comments.
+
+### Threshold Configuration
+
+Edit `scripts/a11y-test.ts` to adjust the violation thresholds:
+
+```typescript
+const THRESHOLDS = {
+  critical: 0,   // Must be 0
+  serious: 0,    // Adjust as needed
+  moderate: 10,  // Warnings allowed
+  minor: 20      // Minor issues allowed
+};
+```
 
 ## Security Notes
 

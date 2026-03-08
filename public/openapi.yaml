@@ -1,0 +1,1050 @@
+openapi: 3.1.0
+info:
+  title: OpenClaw API
+  description: |
+    OpenClaw Micro-SaaS Factory API documentation.
+
+    This API provides authentication, subscription management, webhook handling,
+    and autonomous task management capabilities.
+
+    ## Authentication
+
+    Most endpoints require authentication via BetterAuth sessions or admin secrets.
+
+    - Use session cookies for user endpoints (BetterAuth manages this)
+    - Use `Authorization: Bearer <admin-secret>` or `?secret=<admin-secret>` for admin endpoints
+
+    ## Base URL
+
+    ```
+    {NEXT_PUBLIC_APP_URL}/api
+    ```
+
+    ## Webhooks
+
+    Configure these endpoints in your payment provider dashboards:
+
+    - Stripe: `POST {NEXT_PUBLIC_APP_URL}/api/webhooks/stripe`
+    - Polar: `POST {NEXT_PUBLIC_APP_URL}/api/webhooks/polar`
+
+    These endpoints verify signatures and process subscription events.
+  version: 1.0.0
+  contact:
+    name: OpenClaw Support
+    email: support@openclaw.dev
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+  - url: https://your-app.vercel.app/api
+    description: Production server (replace with your deployed URL)
+
+tags:
+  - name: Authentication
+    description: User authentication endpoints
+  - name: Subscriptions
+    description: Subscription management, analytics, and billing
+  - name: Webhooks
+    description: Incoming webhook handlers from payment providers
+  - name: Autonomous
+    description: Autonomous task management and AI-powered analysis
+
+paths:
+  # ============================================================================
+  # Authentication
+  # ============================================================================
+  /auth/sign-up:
+    post:
+      tags: [Authentication]
+      summary: Sign up a new user
+      description: |
+        Creates a new user account using email/password or OAuth provider.
+        This endpoint is handled by BetterAuth.
+
+        OAuth providers are configured in your BetterAuth setup.
+      operationId: signUp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignUpRequest'
+      responses:
+        '200':
+          description: User created successfully (or OAuth redirect initiated)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Invalid request (email exists, weak password, etc.)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/sign-in:
+    post:
+      tags: [Authentication]
+      summary: Sign in existing user
+      description: |
+        Authenticates a user with email/password or OAuth provider.
+        On success, sets a session cookie.
+      operationId: signIn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignInRequest'
+      responses:
+        '200':
+          description: User signed in successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/sign-out:
+    post:
+      tags: [Authentication]
+      summary: Sign out the current user
+      description: |
+        Clears the session cookie and ends the user's session.
+        Requires an active session cookie.
+      operationId: signOut
+      responses:
+        '200':
+          description: Signed out successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '500':
+          description: Sign out failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/session:
+    get:
+      tags: [Authentication]
+      summary: Get current session
+      description: |
+        Returns the current user's session information if authenticated.
+        Requires an active session cookie.
+      operationId: getSession
+      responses:
+        '200':
+          description: Session information retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/reset-password:
+    post:
+      tags: [Authentication]
+      summary: Request password reset
+      description: |
+        Sends a password reset email to the user.
+        The email contains a link to reset the password.
+      operationId: resetPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+      responses:
+        '200':
+          description: Reset email sent (always returns success even if email doesn't exist)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "If an account exists, a reset email has been sent"
+
+  /auth/callback/{provider}:
+    get:
+      tags: [Authentication]
+      summary: OAuth callback
+      description: |
+        OAuth providers redirect to this endpoint after authentication.
+        The provider name is dynamically captured (e.g., /auth/callback/google).
+        BetterAuth handles the OAuth flow automatically.
+      operationId: oauthCallback
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+            example: google
+          description: OAuth provider identifier (google, github, etc.)
+      responses:
+        '200':
+          description: OAuth flow completed, redirects to frontend
+        '400':
+          description: OAuth error (invalid state, etc.)
+        '500':
+          description: Internal server error
+
+  # ============================================================================
+  # Subscriptions & Billing
+  # ============================================================================
+  /checkout:
+    post:
+      tags: [Subscriptions]
+      summary: Create checkout session
+      description: |
+        Creates a Polar checkout session for the authenticated user.
+        Redirect the user to the returned `checkoutUrl` to complete payment.
+      operationId: createCheckoutSession
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckoutRequest'
+      responses:
+        '200':
+          description: Checkout session created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutResponse'
+        '400':
+          description: Missing product ID or other validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Failed to create checkout session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/analytics/data:
+    get:
+      tags: [Subscriptions]
+      summary: Get subscription analytics
+      description: |
+        Retrieves MRR data, metrics, and recent subscriptions for a date range.
+        Requires admin authentication via `?token=<admin-secret>` or `Authorization: Bearer <admin-secret>` header.
+      operationId: getAnalyticsData
+      parameters:
+        - name: start
+          in: query
+          schema:
+            type: string
+            format: date
+            example: "2025-01-01"
+          description: Start date in YYYY-MM-DD format (default: 30 days ago)
+        - name: end
+          in: query
+          schema:
+            type: string
+            format: date
+            example: "2025-01-31"
+          description: End date in YYYY-MM-DD format (default: today)
+        - name: token
+          in: query
+          schema:
+            type: string
+          description: Admin secret (alternatively use Authorization header)
+      responses:
+        '200':
+          description: Analytics data retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsDataResponse'
+        '401':
+          description: Unauthorized - missing or invalid admin token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: Invalid date format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error fetching analytics data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/analytics/export:
+    get:
+      tags: [Subscriptions]
+      summary: Export subscriptions as CSV
+      description: |
+        Downloads all subscription data as a CSV file.
+        Requires admin authentication via `?token=<admin-secret>` or `Authorization: Bearer <admin-secret>` header.
+      operationId: exportSubscriptions
+      parameters:
+        - name: token
+          in: query
+          schema:
+            type: string
+          description: Admin secret (alternatively use Authorization header)
+      responses:
+        '200':
+          description: CSV file
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Export failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/usage:
+    get:
+      tags: [Subscriptions]
+      summary: Get rate limit usage statistics
+      description: |
+        Retrieves rate limit statistics for all users.
+        Requires admin authentication via `?secret=<admin-secret>` or `Authorization: Bearer <admin-secret>` header.
+      operationId: getUsageStats
+      parameters:
+        - name: secret
+          in: query
+          schema:
+            type: string
+          description: Admin secret (alternatively use Authorization header)
+      responses:
+        '200':
+          description: Usage statistics retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageStatsResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ============================================================================
+  # Webhooks (Incoming from Payment Providers)
+  # ============================================================================
+  /webhooks/stripe:
+    post:
+      tags: [Webhooks]
+      summary: Stripe webhook handler
+      description: |
+        Receives Stripe webhook events for subscription lifecycle management.
+
+        **Configure this URL in your Stripe webhook settings** to receive events.
+
+        ### Events Handled
+
+        - `customer.created` / `customer.updated` / `customer.deleted`
+        - `subscription.created` / `subscription.updated` / `subscription.deleted`
+        - `invoice.paid` / `invoice.payment_failed`
+        - `payment_intent.succeeded` / `payment_intent.payment_failed`
+
+        ### Authentication
+
+        Stripe signs webhook payloads with a signature header `Stripe-Signature`.
+        Provide `STRIPE_WEBHOOK_SECRET` in your environment for signature verification.
+      operationId: stripeWebhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Stripe event object (see Stripe API docs)
+              example:
+                id: "evt_123456789"
+                object: "event"
+                type: "customer.subscription.created"
+                data:
+                  object:
+                    id: "sub_123456"
+                    customer: "cus_123456"
+                    status: "active"
+                    current_period_start: 1704067200
+                    current_period_end: 1706745600
+                    plan:
+                      id: "plan_monthly"
+                      nickname: "Pro Plan"
+                      interval: "month"
+      responses:
+        '200':
+          description: Webhook received and processed (or queued for retry)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  received:
+                    type: boolean
+                    example: true
+                  warning:
+                    type: string
+                    description: Present if non-critical error occurred
+        '400':
+          description: Invalid request (missing signature, bad JSON)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid Stripe signature
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+
+  /webhooks/polar:
+    post:
+      tags: [Webhooks]
+      summary: Polar webhook handler
+      description: |
+        Receives Polar webhook events for subscription lifecycle management.
+
+        **Configure this URL in your Polar webhook settings** to receive events.
+
+        ### Events Handled
+
+        - `customer.created` / `customer.updated`
+        - `subscription.created` / `subscription.updated` / `subscription.canceled` / `subscription.deleted`
+        - `invoice.created` / `invoice.updated` / `invoice.paid`
+        - `payment.succeeded` / `payment.failed`
+
+        ### Authentication
+
+        Polar signs webhook payloads with HMAC-SHA256 using `x-polar-signature` header.
+        Provide `POLAR_WEBHOOK_SECRET` in your environment for signature verification.
+      operationId: polarWebhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Polar event object (see Polar API docs)
+              example:
+                event_type: "subscription.created"
+                data:
+                  subscription:
+                    id: "sub_123456"
+                    customer_id: "cust_123456"
+                    status: "active"
+                    current_period_start: "2024-01-01T00:00:00Z"
+                    current_period_end: "2024-02-01T00:00:00Z"
+                    plan:
+                      id: "plan_monthly"
+                      name: "Pro Plan"
+      responses:
+        '200':
+          description: Webhook received and processed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  received:
+                    type: boolean
+                    example: true
+        '400':
+          description: Invalid request (missing signature, bad JSON)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid Polar signature
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+
+  # ============================================================================
+  # Autonomous Task Management
+  # ============================================================================
+  /analyze:
+    post:
+      tags: [Autonomous]
+      summary: Trigger async vision analysis
+      description: |
+        Queues an image analysis job via Inngest.
+
+        This endpoint returns immediately (202 Accepted) and processes the image
+        asynchronously using OpenRouter's vision-capable AI models.
+
+        Use the returned `requestId` to track analysis status (future extension).
+      operationId: analyzeImage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyzeRequest'
+      responses:
+        '202':
+          description: Analysis queued successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyzeResponse'
+        '400':
+          description: Invalid request (missing imageUrl)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Failed to queue analysis
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Token
+      description: |
+        For admin endpoints, provide: `Authorization: Bearer <admin-secret>`
+        For most user endpoints, use session cookies (BetterAuth handles this).
+
+  schemas:
+    # ==========================================================================
+    # Authentication Schemas
+    # ==========================================================================
+    SignUpRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        password:
+          type: string
+          format: password
+          minLength: 8
+          example: "securePassword123!"
+        name:
+          type: string
+          example: "John Doe"
+        provider:
+          type: string
+          enum: [email, google, github, discord, twitter]
+          description: OAuth provider (omit for email/password sign-up)
+          example: "google"
+        providerId:
+          type: string
+          description: Provider-specific user ID (for OAuth)
+          example: "1234567890"
+        providerAccessToken:
+          type: string
+          description: OAuth access token (for OAuth)
+          example: "ya29.a0AfH6SMB..."
+
+    SignInRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        password:
+          type: string
+          format: password
+          example: "securePassword123!"
+        provider:
+          type: string
+          enum: [email, google, github, discord, twitter]
+          description: OAuth provider (omit for email/password sign-in)
+
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        session:
+          $ref: '#/components/schemas/Session'
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "user_1234567890"
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        name:
+          type: string
+          example: "John Doe"
+        image:
+          type: string
+          format: uri
+          example: "https://example.com/avatar.jpg"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Session:
+      type: object
+      properties:
+        token:
+          type: string
+          description: Session token (if applicable)
+        expiresAt:
+          type: string
+          format: date-time
+
+    PasswordResetRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+
+    SessionResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        expires:
+          type: string
+          format: date-time
+          description: Session expiration time
+
+    # ==========================================================================
+    # Subscription & Billing Schemas
+    # ==========================================================================
+    CheckoutRequest:
+      type: object
+      required: [productId]
+      properties:
+        productId:
+          type: string
+          description: Polar product ID
+          example: "prod_1234567890"
+        planId:
+          type: string
+          description: Polar plan ID (optional if product has single plan)
+          example: "plan_monthly_123"
+
+    CheckoutResponse:
+      type: object
+      required: [checkoutUrl]
+      properties:
+        checkoutUrl:
+          type: string
+          format: uri
+          example: "https://polar.sh/checkout/session_123"
+
+    Customer:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "cus_123456"
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        status:
+          type: string
+          enum: [active, churned, paused]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Subscription:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "sub_123456"
+        customerId:
+          type: string
+        planId:
+          type: string
+        planName:
+          type: string
+          example: "Pro Monthly"
+        billingInterval:
+          type: string
+          enum: [month, year]
+        status:
+          type: string
+          enum: [active, canceled, past_due, incomplete, trialing]
+        currentPeriodStart:
+          type: string
+          format: date-time
+        currentPeriodEnd:
+          type: string
+          format: date-time
+        canceledAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Invoice:
+      type: object
+      properties:
+        id:
+          type: string
+        number:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [draft, open, paid, uncollectible, void]
+        amountDue:
+          type: number
+          format: float
+        amountPaid:
+          type: number
+          format: float
+        currency:
+          type: string
+          default: "usd"
+        dueDate:
+          type: string
+          format: date-time
+          nullable: true
+        paidAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    Payment:
+      type: object
+      properties:
+        id:
+          type: string
+        amount:
+          type: number
+          format: float
+        currency:
+          type: string
+        status:
+          type: string
+          enum: [succeeded, failed, processing, requires_action]
+        paymentMethodType:
+          type: string
+          example: "card"
+        createdAt:
+          type: string
+          format: date-time
+
+    DailyMRR:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        mrr:
+          type: number
+          format: float
+          description: Monthly Recurring Revenue
+        newSubscriptions:
+          type: number
+        churnedSubscriptions:
+          type: number
+
+    Metrics:
+      type: object
+      properties:
+        mrr:
+          type: number
+          format: float
+        activeSubscribers:
+          type: integer
+        newSubscribers30d:
+          type: integer
+        churnedSubscribers30d:
+          type: integer
+        churnRate:
+          type: number
+          format: float
+          description: Churn rate as percentage
+        asOf:
+          type: string
+          format: date-time
+
+    AnalyticsDataResponse:
+      type: object
+      properties:
+        mrrData:
+          type: array
+          items:
+            $ref: '#/components/schemas/DailyMRR'
+        metrics:
+          $ref: '#/components/schemas/Metrics'
+        subscriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscriptionWithCustomer'
+        dateRange:
+          type: object
+          properties:
+            start:
+              type: string
+              format: date
+            end:
+              type: string
+              format: date
+
+    SubscriptionWithCustomer:
+      type: object
+      properties:
+        subscriptionId:
+          type: string
+        customerEmail:
+          type: string
+          format: email
+        customerName:
+          type: string
+          nullable: true
+        planName:
+          type: string
+        billingInterval:
+          type: string
+        status:
+          type: string
+        currentPeriodStart:
+          type: string
+          format: date-time
+        currentPeriodEnd:
+          type: string
+          format: date-time
+        canceledAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    UsageStatsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            users:
+              type: array
+              items:
+                $ref: '#/components/schemas/UserRateLimit'
+            summary:
+              type: object
+              properties:
+                totalRequests:
+                  type: integer
+                uniqueUsers:
+                  type: integer
+                limitPerUser:
+                  type: integer
+                windowHours:
+                  type: number
+            generatedAt:
+              type: string
+              format: date-time
+
+    UserRateLimit:
+      type: object
+      properties:
+        id:
+          type: string
+          description: User identifier (user ID or IP)
+        used:
+          type: integer
+        remaining:
+          type: integer
+        resetAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    # ==========================================================================
+    # Autonomous Task Management Schemas
+    # ==========================================================================
+    AnalyzeRequest:
+      type: object
+      required: [imageUrl]
+      properties:
+        imageUrl:
+          type: string
+          format: uri
+          description: URL of the image to analyze (must be publicly accessible)
+          example: "https://example.com/image.jpg"
+        imageUrls:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: Array of image URLs for batch processing (requires batch=true)
+          example: ["https://example.com/image1.jpg", "https://example.com/image2.jpg"]
+        prompt:
+          type: string
+          description: Custom analysis prompt (uses domain-specific default if omitted)
+          example: "Describe the main elements in this image with tags"
+        requestId:
+          type: string
+          description: Custom request ID for tracking (auto-generated if omitted)
+          example: "custom-analysis-001"
+        batch:
+          type: boolean
+          default: false
+          description: Set to true to process multiple imageUrls in parallel
+
+    AnalyzeResponse:
+      type: object
+      required: [requestId, eventId]
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Analysis queued"
+        requestId:
+          type: string
+          description: Unique identifier for this analysis request
+        eventId:
+          type: string
+          description: Inngest event ID for tracking
+        statusUrl:
+          type: string
+          format: uri
+          description: Future: URL to check analysis status
+        function:
+          type: string
+          description: Inngest function ID that will process this
+        enqueuedAt:
+          type: string
+          format: date-time
+
+    VisionAnalysisResult:
+      type: object
+      properties:
+        summary:
+          type: string
+          description: Brief overview of the image
+        details:
+          type: array
+          items:
+            type: string
+          description: Array of detailed observations
+        tags:
+          type: array
+          items:
+            type: string
+          description: Relevant keywords/tags
+        confidence:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+
+    # ==========================================================================
+    # Error Response Schema
+    # ==========================================================================
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          description: Error message
+        message:
+          type: string
+          description: Human-readable explanation (optional)
+        code:
+          type: string
+          description: Error code (optional)

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LandingPageConfig } from '@/lib/landing-config';
+import { authClient } from '@/lib/auth-client';
 
 interface PricingProps {
   config: LandingPageConfig;
@@ -23,8 +24,83 @@ export default function Pricing({ config }: PricingProps) {
     }).format(price);
   };
 
-  // Check if Polar integration is enabled
-  const usePolar = pricing.polarEnabled && pricing.polarProductId;
+  // Check if Polar integration is enabled globally
+  const usePolar = pricing.polarEnabled && !!pricing.polarProductId;
+
+  // Auth state
+  const [user, setUser] = useState<any>(null);
+  const [loadingSession, setLoadingSession] = useState(true);
+  const [processingPlan, setProcessingPlan] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Check if user is signed in
+    authClient.getSession().then((session) => {
+      if (session?.user) {
+        setUser(session.user);
+      }
+      setLoadingSession(false);
+    });
+  }, []);
+
+  const handleCheckout = async (plan: any) => {
+    // If Polar not configured for this plan, fallback
+    if (!usePolar || !plan.polarPlanId) {
+      // For free plan, just show get started; for paid without polar, maybe email signup
+      if (plan.price === 0) {
+        window.location.href = '#get-started';
+      } else {
+        alert('Payment integration not configured for this plan.');
+      }
+      return;
+    }
+
+    // Ensure user is authenticated
+    if (!user) {
+      // Redirect to sign-in with callback
+      const callbackUrl = window.location.pathname + window.location.search;
+      window.location.href = `/sign-in?callbackUrl=${encodeURIComponent(callbackUrl)}`;
+      return;
+    }
+
+    setProcessingPlan(plan.name);
+
+    try {
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          productId: pricing.polarProductId, // product from pricing config
+          planId: plan.polarPlanId, // plan-specific ID
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to create checkout session');
+      }
+
+      const { checkoutUrl } = await response.json();
+      // Redirect to Polar checkout
+      window.location.href = checkoutUrl;
+    } catch (error: any) {
+      console.error('Checkout error:', error);
+      alert(`Checkout failed: ${error.message}`);
+      setProcessingPlan(null);
+    }
+  };
+
+  if (loadingSession) {
+    return (
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-300">Loading...</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-20">
@@ -115,39 +191,29 @@ export default function Pricing({ config }: PricingProps) {
               </ul>
 
               <div className="mt-8">
-                {usePolar ? (
-                  // Polar integration placeholder
-                  <a
-                    href="#polar-checkout"
-                    className={`block w-full text-center px-6 py-3 rounded-lg font-semibold transition-colors ${
-                      plan.highlighted
-                        ? 'bg-white text-blue-600 hover:bg-gray-50'
-                        : 'bg-blue-600 text-white hover:bg-blue-500'
-                    }`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      // TODO: Integrate Polar checkout
-                      alert(
-                        'Polar checkout would be initialized here. Configure Polar in your product settings.'
-                      );
-                    }}
-                  >
-                    {plan.ctaText}
-                  </a>
-                ) : (
-                  <a
-                    href={plan.price === 0 ? '#get-started' : '#signup'}
-                    className={`block w-full text-center px-6 py-3 rounded-lg font-semibold transition-colors ${
-                      plan.highlighted
-                        ? 'bg-white text-blue-600 hover:bg-gray-50'
-                        : plan.price === 0
-                        ? 'bg-gray-200 text-gray-900 hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600'
-                        : 'bg-blue-600 text-white hover:bg-blue-500'
-                    }`}
-                  >
-                    {plan.ctaText}
-                  </a>
-                )}
+                <button
+                  onClick={() => handleCheckout(plan)}
+                  disabled={processingPlan === plan.name}
+                  className={`block w-full text-center px-6 py-3 rounded-lg font-semibold transition-colors ${
+                    plan.highlighted
+                      ? 'bg-white text-blue-600 hover:bg-gray-50 disabled:bg-gray-100'
+                      : plan.price === 0
+                      ? 'bg-gray-200 text-gray-900 hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 disabled:bg-gray-300'
+                      : 'bg-blue-600 text-white hover:bg-blue-500 disabled:bg-blue-400'
+                  }`}
+                >
+                  {processingPlan === plan.name ? (
+                    <span className="flex items-center justify-center">
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4\" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Processing...
+                    </span>
+                  ) : (
+                    plan.ctaText
+                  )}
+                </button>
               </div>
             </div>
           ))}

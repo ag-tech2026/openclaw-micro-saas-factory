@@ -18,6 +18,13 @@ export const POST = async (req: NextRequest) => {
         // Import functions dynamically to avoid circular dependencies
         (await import('@/lib/inngest/functions')).processVisionAnalysis,
         (await import('@/lib/inngest/functions')).batchProcessVisionAnalysis,
+        (await import('@/lib/inngest/functions')).generateSocialMediaForMvp,
+        (await import('@/lib/inngest/functions')).scheduleSocialPost,
+        // Dunning and payment retry functions
+        (await import('@/lib/inngest/dunning')).initiatePaymentRetry,
+        (await import('@/lib/inngest/dunning')).executePaymentRetry,
+        (await import('@/lib/inngest/dunning')).processSuccessfulPayment,
+        (await import('@/lib/inngest/dunning')).processDueRetries,
       ],
       // Enable event persistence verification
       // This ensures events are only processed once

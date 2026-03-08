@@ -1,0 +1,4 @@
+declare module '@/lib/db' {
+  import { Subscriber } from '@/lib/db';
+  export * from '@/lib/db';
+}

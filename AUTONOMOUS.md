@@ -16,23 +16,50 @@
 
 ## Backlog
 
-- [ ] Build email subscription capture + automated newsletter for audience building
-- [ ] Design MVP scope: "AI image T&Cs generator" (quick build, clear value)
-- [ ] Write comprehensive bootstrap guide: run everything from fresh OpenClaw install (full setup manual)
-- [ ] Implement affiliate referral system to incentivize word-of-mouth
-- [ ] Add Stripe/Polar webhook handling for payment events and subscription management
-- [ ] Build dashboard for MRR tracking and analytics
-- [ ] Create automated social media content generator for MVPs (images + captions)
+- [ ] Implement payment retry logic and dunning management
+- [ ] Build admin audit logs for critical actions
+- [ ] Integrate Plausible analytics for product usage insights
+- [ ] Add dark mode toggle with system preference detection
+- [ ] Implement CI/CD with GitHub Actions (full pipeline)
+- [ ] Add performance monitoring with Lighthouse CI
+- [ ] Create feature flag service for gradual rollouts
+- [ ] Implement per-tenant database isolation (multi-tenancy)
+- [ ] Add Stripe/Polar checkout retry and error pages
+- [ ] Build admin bulk operations (mass email, user actions)
+
+
+
+
+
+
+
+
+
 
 ## In Progress
 
-- [~] Implement sub-agent health monitor: every 30m check status, restart failed tasks until completion
+
 - [~] Set up GitHub repository and Vercel integration for autonomous deployments (need repo owner credentials)
 - [~] Automate deployment: push to GitHub → auto-deploy to Vercel for all MVPs (need Vercel account link)
 - [~] Create product pricing calculator: simple tool to determine optimal pricing based on costs and target margin
 - [~] Build AI-powered customer support chatbot for MVPs (using OpenRouter)
+- [~] Build email subscription capture + automated newsletter for audience building
+- [~] Implement affiliate referral system to incentivize word-of-mouth
+
+- [~] Create automated social media content generator for MVPs (images + captions)
+
+
+
+- [~] Add comprehensive test suite and CI pipeline
+- [~] Set up Sentry error monitoring and alerting
+- [~] Add Stripe/Polar webhook handling for payment events and subscription management
+- [~] Implement daily workspace backup to GitHub (full repo + DB snapshot)
+- [~] Integrate Resend email service for reliable newsletter delivery
+- [~] Build admin user management dashboard (view users, roles, quotas)
+- [~] Add feature flags for MVP gradual rollouts
 
 ## Recently Completed
+
 
 - [x] Research viable micro-SaaS niches for AI vision + Polar payment combo
 - [x] Enhance boilerplate for rapid MVP deployment (env config, error monitoring, analytics)
@@ -43,3 +70,11 @@
 - [x] Set up Inngest background job for async vision analysis
 - [x] Implement usage tracking and rate limiting per user
 - [x] Build MVP: Social Media Content Moderation API (first product)
+- [x] Implement sub-agent health monitor: every 30m check status, restart failed tasks until completion
+- [x] Write comprehensive bootstrap guide: run everything from fresh OpenClaw install (full setup manual)
+- [x] Build dashboard for MRR tracking and analytics
+
+- [x] Design MVP scope: "AI image T&Cs generator" (quick build, clear value)
+- [x] Implement Stripe/Polar checkout flow for MVP subscriptions
+- [x] Create admin CLI for task and deployment management
+- [x] Implement database migration management (Drizzle)

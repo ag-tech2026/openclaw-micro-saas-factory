@@ -1,0 +1,136 @@
+{
+  "slug": "example-saas",
+  "name": "Example SaaS",
+  "tagline": "The best way to manage your projects",
+  "description": "Example SaaS is a powerful project management tool designed for modern teams. Collaborate, track progress, and ship faster with our intuitive platform.",
+
+  "hero": {
+    "headline": "Build Faster with Example SaaS",
+    "subheadline": "Streamline your workflow and boost productivity by 10x. Start free, no credit card required.",
+    "ctaText": "Start Free Trial",
+    "ctaUrl": "https://example.com/signup"
+  },
+
+  "features": [
+    {
+      "title": "Real-time Collaboration",
+      "description": "Work together with your team in real-time. See changes instantly and stay in sync.",
+      "icon": "🚀"
+    },
+    {
+      "title": "Advanced Analytics",
+      "description": "Get deep insights into your project metrics with beautiful dashboards and reports.",
+      "icon": "📊"
+    },
+    {
+      "title": "Seamless Integrations",
+      "description": "Connect with your favorite tools like Slack, GitHub, and Notion. Work where you work best.",
+      "icon": "🔗"
+    },
+    {
+      "title": "Enterprise Security",
+      "description": "Bank-grade security with SOC 2 compliance. Your data is always protected and private.",
+      "icon": "🔒"
+    }
+  ],
+
+  "pricing": {
+    "enabled": true,
+    "currency": "USD",
+    "polarEnabled": false,
+    "polarProductId": "",
+    "plans": [
+      {
+        "name": "Free",
+        "price": 0,
+        "period": "/month",
+        "description": "Perfect for side projects and small teams",
+        "features": [
+          "Up to 3 team members",
+          "5 projects",
+          "Basic analytics",
+          "Community support"
+        ],
+        "highlighted": false,
+        "ctaText": "Get Started"
+      },
+      {
+        "name": "Pro",
+        "price": 29,
+        "period": "/month",
+        "description": "For growing teams that need more power",
+        "features": [
+          "Up to 20 team members",
+          "Unlimited projects",
+          "Advanced analytics",
+          "Priority support",
+          "API access",
+          "Custom integrations"
+        ],
+        "highlighted": true,
+        "ctaText": "Start Trial"
+      },
+      {
+        "name": "Enterprise",
+        "price": 99,
+        "period": "/month",
+        "description": "For large organizations with custom needs",
+        "features": [
+          "Unlimited team members",
+          "Unlimited projects",
+          "Advanced analytics & reporting",
+          "24/7 dedicated support",
+          "Custom contracts",
+          "SSO & SAML",
+          "Audit logs"
+        ],
+        "highlighted": false,
+        "ctaText": "Contact Sales"
+      }
+    ]
+  },
+
+  "faq": [
+    {
+      "question": "Can I change plans later?",
+      "answer": "Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately and we'll prorate any charges."
+    },
+    {
+      "question": "Is there a free trial?",
+      "answer": "Absolutely! Our Pro plan comes with a 14-day free trial. No credit card required to start."
+    },
+    {
+      "question": "How does billing work?",
+      "answer": "We bill monthly or annually. Annual billing gives you a 20% discount. We accept all major credit cards and PayPal."
+    },
+    {
+      "question": "Can I cancel anytime?",
+      "answer": "Yes, you can cancel your subscription at any time. Your access will continue until the end of your billing period."
+    }
+  ],
+
+  "footer": {
+    "tagline": "Empowering teams to do their best work.",
+    "links": [
+      { "label": "Features", "url": "https://example.com/features" },
+      { "label": "Pricing", "url": "https://example.com/pricing" },
+      { "label": "Documentation", "url": "https://example.com/docs" },
+      { "label": "Blog", "url": "https://example.com/blog" },
+      { "label": "Contact", "url": "https://example.com/contact" },
+      { "label": "Privacy Policy", "url": "https://example.com/privacy" },
+      { "label": "Terms of Service", "url": "https://example.com/terms" }
+    ],
+    "socialLinks": [
+      { "platform": "twitter", "url": "https://twitter.com/example" },
+      { "platform": "github", "url": "https://github.com/example" },
+      { "platform": "linkedin", "url": "https://linkedin.com/company/example" }
+    ],
+    "copyright": "© {year} Example SaaS. All rights reserved."
+  },
+
+  "seo": {
+    "title": "Example SaaS - Project Management for Modern Teams",
+    "description": "Example SaaS is a powerful project management tool designed for modern teams. Start your free trial today!",
+    "image": "https://example.com/og-image.jpg"
+  }
+}
