@@ -1,0 +1,32 @@
+{
+  "HEALTH-001": {
+    "description": "Implement sub-agent health monitor: every 30m check status, restart failed tasks until completion",
+    "childSessionKey": "agent:main:subagent:82db315f-1966-4650-8ab5-9824ef38bc34",
+    "status": "running",
+    "spawnedAt": "2026-03-08T14:00:00.000Z"
+  },
+  "GITHUB-001": {
+    "description": "Set up GitHub repository and Vercel integration for autonomous deployments (need repo owner credentials)",
+    "childSessionKey": "agent:main:subagent:5c3ae24f-9afa-4255-8521-b6aa7540e69c",
+    "status": "running",
+    "spawnedAt": "2026-03-08T14:00:00.000Z"
+  },
+  "DEPLOY-001": {
+    "description": "Automate deployment: push to GitHub → auto-deploy to Vercel for all MVPs (need Vercel account link)",
+    "childSessionKey": "agent:main:subagent:9ecebe53-91cf-4128-a20e-04a0c52e67dd",
+    "status": "running",
+    "spawnedAt": "2026-03-08T14:00:00.000Z"
+  },
+  "PRICING-001": {
+    "description": "Create product pricing calculator: simple tool to determine optimal pricing based on costs and target margin",
+    "childSessionKey": "agent:main:subagent:d5cbc018-ffce-4046-8a6d-4e49923a800a",
+    "status": "running",
+    "spawnedAt": "2026-03-08T14:00:00.000Z"
+  },
+  "CHATBOT-001": {
+    "description": "Build AI-powered customer support chatbot for MVPs (using OpenRouter)",
+    "childSessionKey": "agent:main:subagent:1419b23e-8464-405c-b8bb-c029db4fb21f",
+    "status": "running",
+    "spawnedAt": "2026-03-08T14:00:00.000Z"
+  }
+}

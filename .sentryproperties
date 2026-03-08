@@ -1,0 +1,12 @@
+# Sentry configuration for CI/CD
+# Place this file in your CI environment or .env file
+
+# Your Sentry organization slug
+defaults.org=your-org
+
+# Your Sentry project name
+defaults.project=your-project
+
+# Your Sentry auth token (keep this secret!)
+# Generate at: https://sentry.io/settings/account/api/auth-tokens/
+auth.token=your-auth-token

@@ -1,0 +1,35 @@
+{
+  "name": "twitter-audience-bot",
+  "version": "1.0.0",
+  "description": "A Twitter audience-building bot for MVP announcements and engagement",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "lint": "eslint src/**/*.ts"
+  },
+  "keywords": [
+    "twitter",
+    "bot",
+    "marketing",
+    "automation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "twitter-api-v2": "^1.17.2",
+    "bullmq": "^5.10.0",
+    "ioredis": "^5.4.1",
+    "dotenv": "^16.4.5",
+    "winston": "^3.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.19",
+    "typescript": "^5.3.3",
+    "ts-node": "^10.9.2",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.56.0"
+  }
+}

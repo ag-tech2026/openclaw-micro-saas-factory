@@ -1,0 +1,42 @@
+{
+  "name": "nextjs-mvp-boilerplate",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "build:prod": "NODE_ENV=production next build",
+    "start": "next start",
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "type-check": "tsc --noEmit",
+    "prepare": "husky install",
+    "sentry:login": "sentry-cli login",
+    "sentry:release": "sentry-cli releases new $(git rev-parse --short HEAD) && sentry-cli releases files $(git rev-parse --short HEAD) upload-sourcemaps .next && sentry-cli releases finalize $(git rev-parse --short HEAD)"
+  },
+  "dependencies": {
+    "next": "15.2.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "@sentry/nextjs": "^8.34.0",
+    "next-themes": "^0.4.6",
+    "zod": "^3.24.2",
+    "js-yaml": "^4.1.0",
+    "better-sqlite3": "^11.9.1",
+    "bcrypt": "^5.1.1",
+    "form-data": "^4.0.0",
+    "rate-limiter-flexible": "^4.0.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "@types/node": "^20.17.25",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/bcrypt": "^5.0.0",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "15.2.4",
+    "@typescript-eslint/eslint-plugin": "^8.32.1",
+    "@typescript-eslint/parser": "^8.32.1"
+  }
+}
