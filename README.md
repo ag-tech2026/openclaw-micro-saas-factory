@@ -4,6 +4,8 @@
 
 A production-ready Next.js 15 boilerplate with environment configuration, error monitoring, analytics, and comprehensive documentation for rapid MVP deployment.
 
+**🚀 Deployed via Vercel with automatic CI/CD**
+
 ## Features
 
 - **Environment Configuration**: Type-safe env var loading with Zod validation and clear error messages
