@@ -20,11 +20,23 @@ export const POST = async (req: NextRequest) => {
         (await import('@/lib/inngest/functions')).batchProcessVisionAnalysis,
         (await import('@/lib/inngest/functions')).generateSocialMediaForMvp,
         (await import('@/lib/inngest/functions')).scheduleSocialPost,
+        // Priority queue job processor
+        (await import('@/lib/inngest/functions')).processPriorityJob,
+        (await import('@/lib/inngest/functions')).priorityQueueStatsReporter,
         // Dunning and payment retry functions
         (await import('@/lib/inngest/dunning')).initiatePaymentRetry,
         (await import('@/lib/inngest/dunning')).executePaymentRetry,
         (await import('@/lib/inngest/dunning')).processSuccessfulPayment,
         (await import('@/lib/inngest/dunning')).processDueRetries,
+        // Audit retention and archiving
+        (await import('@/lib/inngest/audit-retention')).archiveAuditLogs,
+        (await import('@/lib/inngest/audit-retention')).triggerAuditArchiveNow,
+        // Email DLQ retry
+        (await import('@/lib/inngest/email-dlq')).emailDlqRetry,
+        // Health monitoring
+        (await import('@/lib/inngest/health')).healthCollector,
+        (await import('@/lib/inngest/health')).manualHealthCheck,
+        (await import('@/lib/inngest/health')).acknowledgeAlert,
       ],
       // Enable event persistence verification
       // This ensures events are only processed once
@@ -32,6 +44,19 @@ export const POST = async (req: NextRequest) => {
         // Requires INNGEST_SIGNING_KEY in production
         // In development, you can disable or use a dummy key
         signingKey: process.env.INNGEST_SIGNING_KEY,
+      },
+      // Process from priority queue on a schedule
+      // This worker runs frequently to keep queue moving
+      scheduled: {
+        // Stats reporter that runs every 30 seconds
+        // '*/30 * * * * * *' = every 30 seconds
+        'priority-queue-stats-reporter': '*/30 * * * * * *',
+        // Health collector runs every 5 minutes
+        // '*/5 * * * *' = every 5 minutes
+        'health-collector': '*/5 * * * *',
+        // Audit log archiver runs daily at 2 AM (server off-peak)
+        // '0 2 * * *' = at 2:00 AM every day
+        'archive-audit-logs': '0 2 * * *',
       },
     });
 

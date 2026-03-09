@@ -1,6 +1,8 @@
 # Next.js MVP Boilerplate
 
 [![Accessibility Tests](https://github.com/your-username/your-repo/actions/workflows/a11y.yml/badge.svg)](https://github.com/your-username/your-repo/actions/workflows/a11y.yml)
+[![Performance](https://github.com/your-username/your-repo/actions/workflows/performance.yml/badge.svg)](https://github.com/your-username/your-repo/actions/workflows/performance.yml)
+[![Security](https://github.com/your-username/your-repo/actions/workflows/security.yml/badge.svg)](https://github.com/your-username/your-repo/actions/workflows/security.yml)
 
 A production-ready Next.js 15 boilerplate with environment configuration, error monitoring, analytics, and comprehensive documentation for rapid MVP deployment.
 
@@ -8,8 +10,10 @@ A production-ready Next.js 15 boilerplate with environment configuration, error 
 
 ## Features
 
+- **Security Scanning**: Automated vulnerability detection with Snyk and Dependabot (critical issues fail CI)
 - **Environment Configuration**: Type-safe env var loading with Zod validation and clear error messages
 - **Error Monitoring**: Sentry integration with global error boundaries for client and server-side errors
+- **Health Monitoring**: Comprehensive system health dashboard with real-time metrics, alerts, and admin actions ([docs](HEALTH_DASHBOARD.md))
 - **Analytics**: Plausible Analytics support with event tracking utilities
 - **TypeScript**: Full TypeScript support with strict type checking
 - **ESLint**: Configured for Next.js and TypeScript best practices
@@ -256,6 +260,63 @@ npm start
 
 Ensure your platform supports Node.js 18+ and has all environment variables configured.
 
+## Health Monitoring
+
+A comprehensive health monitoring system is included, providing real-time insights into system performance, API health, database status, business metrics, and external integrations.
+
+### Features
+
+- **Real-time Dashboard**: Interactive UI at `/admin/health` with status grid, charts, and alerts
+- **Scheduled Collection**: Inngest collects metrics every 5 minutes
+- **Configurable Alerts**: Get notifications via Telegram, Email (Resend), or Slack when thresholds are breached
+- **Admin Actions**: Restart gateway, clear cache, toggle maintenance mode, trigger manual checks
+- **Audit Logging**: All admin actions logged for compliance
+
+### Setup
+
+1. **Configure thresholds** (optional) in `.env.local`:
+   ```env
+   HEALTH_ALERT_DB_LATENCY_MS=200
+   HEALTH_ALERT_ERROR_RATE_PCT=5
+   HEALTH_ALERT_CPU_PCT=80
+   HEALTH_ALERT_DISK_PCT=90
+   HEALTH_ALERT_MRR_DROP_PCT=10
+   ```
+
+2. **Configure alert channels** (optional):
+   ```env
+   HEALTH_ALERT_TELEGRAM_BOT_TOKEN=your_bot_token
+   HEALTH_ALERT_TELEGRAM_CHAT_ID=your_chat_id
+   HEALTH_ALERT_EMAIL_TO=alerts@yourdomain.com
+   HEALTH_ALERT_SLACK_WEBHOOK=https://hooks.slack.com/...
+   ```
+
+3. **Run database migrations** to create health tables:
+   ```bash
+   npm run db:migrate
+   ```
+
+4. **Access the dashboard** at `/admin/health` (requires admin login with 2FA)
+
+### Documentation
+
+- [Health Dashboard Guide](HEALTH_DASHBOARD.md) - Full feature documentation
+- [Health Checks Developer Guide](HEALTH_CHECKS_DEV_GUIDE.md) - Adding custom modules
+- [Alert Threshold Tuning](ALERT_THRESHOLD_TUNING.md) - Calibration best practices
+
+### API Endpoints
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /api/health/status` | Comprehensive health status (admin) |
+| `GET /api/health/history?metric=xxx&range=24h` | Time-series data for charts |
+| `GET /api/health/checks/:module` | Run specific health check on demand |
+| `POST /api/health/actions/:action` | Execute admin actions |
+| `GET /api/health/alerts` | List recent alerts |
+| `PATCH /api/health/alerts` | Bulk resolve alerts |
+
+The simple public health endpoint (`/api/health`) remains available for load balancers and status pages.
+
 ## TypeScript
 
 This project uses TypeScript with strict mode enabled. All files should be `.tsx` or `.ts`.
@@ -338,12 +399,227 @@ const THRESHOLDS = {
 };
 ```
 
-## Security Notes
+## Performance Monitoring
 
-- Never commit `.env.local` or any files containing secrets
-- Rotate API keys regularly
-- Use webhook signatures for payment integrations
-- Enable CORS properly for API routes
+This project includes automated performance auditing using Lighthouse CI. Performance budgets are enforced on every pull request to prevent regressions.
+
+### Performance Budgets
+
+- **Largest Contentful Paint (LCP)**: < 2 seconds
+- **Cumulative Layout Shift (CLS)**: < 0.1
+- **Total Blocking Time (TBT)**: < 150ms
+- **Performance score**: ≥ 90/100
+- **Accessibility, Best Practices, SEO**: ≥ 90/100 each
+
+### Running Locally
+
+1. Start your development or production server:
+
+```bash
+npm run build
+npm start
+```
+
+2. In another terminal, run Lighthouse CI:
+
+```bash
+npm run lighthouse
+```
+
+This will:
+- Run 3 Lighthouse audits against `http://localhost:3000`
+- Fail if any budget is exceeded
+- Upload a temporary report (visible in console output)
+- Store results in `.lighthouseci/`
+
+### CI/CD Integration
+
+Performance tests run automatically on every PR and push to main via GitHub Actions.
+
+The workflow:
+1. Installs dependencies
+2. Builds the Next.js app
+3. Starts the production server
+4. Waits for the server to be ready
+5. Runs Lighthouse CI with 3 iterations
+6. Fails the build if performance budgets are exceeded
+7. Uploads detailed Lighthouse reports as build artifacts (retained for 14 days)
+
+You can view the performance badge at the top of this README.
+
+### Customizing Budgets
+
+Edit `lighthouse.config.js` to adjust performance thresholds:
+
+```javascript
+assert: {
+  assertions: {
+    'performance.largest-contentful-paint': ['error', { maxNumericValue: 2000 }],
+    'performance.cumulative-layout-shift': ['error', { maxNumericValue: 0.1 }],
+    // Adjust other metrics as needed
+  },
+},
+```
+
+### Viewing Reports
+
+After each CI run, you can download the Lighthouse HTML report from the "Artifacts" section of the workflow run. The report includes detailed metrics, suggestions, and opportunities for improvement.
+
+## Security Scanning
+
+This project includes automated security scanning to catch vulnerabilities early in development and prevent critical issues from reaching production.
+
+### What's Included
+
+- **Snyk Integration**: Scans all dependencies (direct and transitive) for known vulnerabilities on every PR/push
+- **Dependabot**: Automatically creates PRs for patch updates and auto-merges them after successful CI
+- **Nightly Monitoring**: Runs daily to detect newly disclosed vulnerabilities in your dependency tree
+- **CI Enforcement**: Build fails if critical vulnerabilities are detected (with override options)
+- **Security Badge**: Displays current security status on the README
+
+### Configuration
+
+#### 1. Set up Snyk token
+
+1. Create a free account at [snyk.io](https://snyk.io)
+2. Get your API token from Settings → API Token
+3. Add to GitHub repository secrets:
+   - Go to Settings → Secrets and variables → Actions
+   - Add new repository secret: `SNYK_TOKEN` with your token value
+
+#### 2. Configure Dependabot reviewers (optional)
+
+Edit `.github/dependabot.yml` to set the `reviewers` and `assignees` fields to your team members or GitHub usernames.
+
+#### 3. Auto-merge patch updates (enabled by default)
+
+The Dependabot configuration includes auto-merge for patch updates. This means:
+- Patch version updates (e.g., 1.2.3 → 1.2.4) automatically create PRs
+- After CI passes (including security scans), the PR auto-merges
+- Bumps your dependencies without manual intervention
+
+### How It Works
+
+#### On Pull Requests and Pushes
+
+The `Security` workflow runs Snyk with the following logic:
+
+1. **Scan dependencies** using Snyk CLI
+2. **Fail if critical vulnerabilities** are found (severity threshold: critical)
+3. **Allow overrides** (not recommended):
+   - Add `[skip security]` to PR title, OR
+   - Add `security-override` label to PR
+4. **Post detailed findings** to PR comments and step summary
+5. **Upload reports** as artifacts (JSON and HTML) for 30 days
+
+#### Nightly Monitoring
+
+The `snyk-monitor` job runs every night at midnight UTC (`cron: '0 0 * * *'`):
+
+- Runs `snyk monitor --all-projects` to create a snapshot of your project's dependencies
+- Snyk continuously monitors these snapshots and alerts you (via email/dashboard) when new vulnerabilities are disclosed
+- Helps you stay ahead of zero-day issues in your dependencies
+
+### Override Mechanism
+
+Critical vulnerabilities normally fail the CI. To force a build to pass despite critical issues:
+
+- **For PRs**: Add `[skip security]` to the PR title OR add the `security-override` label
+- **For direct pushes to main**: You can temporarily disable the workflow protection in GitHub branch protection rules (not recommended)
+
+> ⚠️ **Warning**: Overriding security checks should be extremely rare and only after careful review. Document why you overrode and create a follow-up task to address the vulnerability.
+
+### Viewing Security Reports
+
+After any workflow run:
+
+1. Go to the Actions tab → select the "Security" workflow run
+2. In the "Snyk Security Scan" job:
+   - **Step summary** shows counts of vulnerabilities by severity
+   - **Artifacts** section contains:
+     - `snyk-report.json`: Machine-readable report
+     - `snyk-report.html`: Human-readable detailed report (open in browser)
+
+### Customizing Security Thresholds
+
+To change which severity levels cause CI to fail:
+
+Edit `.github/workflows/security.yml`:
+
+```yaml
+- name: Run Snyk to check for vulnerabilities
+  uses: snyk/actions/node@master
+  with:
+    args: >
+      --severity-threshold=high  # Change from 'critical' to 'high', 'medium', or 'low'
+      --fail-on=critical         # Build fails on this severity
+```
+
+Or run Snyk locally with:
+
+```bash
+npx snyk test --severity-threshold=high
+```
+
+### Local Testing
+
+Before pushing, test your dependencies locally:
+
+```bash
+# Install Snyk CLI globally (once)
+npm install -g snyk
+
+# Authenticate
+snyk auth
+
+# Test for vulnerabilities
+snyk test
+
+# Monitor project (creates snapshot in Snyk dashboard)
+snyk monitor
+```
+
+### Snyk Dashboard
+
+Visit your Snyk dashboard to:
+- See all projects and their vulnerability status
+- Set up notifications (Slack, email, etc.) for new vulnerabilities
+- Get fix PRs automatically (Snyk can open PRs directly)
+- Track remediation progress
+
+### Security Best Practices
+
+- **Never ignore critical vulnerabilities** without a valid override and mitigation plan
+- **Upgrade dependencies regularly** - even without known vulns, old packages become unsupported
+- **Monitor your Snyk dashboard** daily for new alerts from nightly monitors
+- **Review Dependabot PRs** promptly - they include security fixes
+- **Consider enabling auto-merge** only for patch updates; minor/major updates should be reviewed
+- **Keep SNYK_TOKEN secure** - it's a secret with write access to your Snyk account
+
+### Troubleshooting
+
+**Snyk test fails with "authentication required"**
+
+- Verify `SNYK_TOKEN` secret exists in GitHub repository settings
+- Ensure the token has not expired (regenerate if needed)
+
+**No vulnerabilities found but I know there are issues**
+
+- Snyk database may not have caught up - try again later
+- Ensure you're using the latest Snyk CLI (the action uses latest by default)
+- Check that your `package-lock.json` is committed (Snyk uses lockfile for accurate graph)
+
+**Workflow runs but doesn't fail on critical vulns**
+
+- Verify `--severity-threshold=critical` and `--fail-on=critical` are set
+- Check the step output for "Critical vulnerabilities found"
+- Ensure there are actually critical vulnerabilities (some may be high, not critical)
+
+**Snyk monitor fails**
+
+- Monitor jobs can fail without breaking the build (continue-on-error: true)
+- Check Snyk dashboard to see if the project snapshot was created
+- Ensure `SNYK_TOKEN` has monitor permissions
 
 ## Contributing
 
