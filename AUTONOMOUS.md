@@ -16,6 +16,83 @@
 
 ## Backlog
 
+
+
+
+
+
+- [ ] Create automated documentation generation from code
+- [ ] Implement feature usage analytics with funnels
+- [ ] Add automated security headers and CSP
+- [ ] Build a plugin system for extensibility
+- [ ] Set up Vercel Analytics integration for real‑user metrics
+
+
+
+
+
+
+
+- [ ] Create health check dashboard with metrics
+- [ ] Implement email dead‑letter queue handling
+- [ ] Add integration tests for payment flows
+- [ ] Build internal SDK for micro‑SaaS modules
+- [ ] Add support for custom domains per MVP
+
+
+
+
+
+- [ ] Create CLI for managing MVPs (list, deploy, delete)
+- [ ] Implement webhook signature verification hardening
+- [ ] Add performance alerts (SLOs) and notification system
+- [ ] Build database connection pooling optimization for Neon
+- [ ] Implement audit trail for user consent (GDPR)
+- [ ] Add support for multiple organizations per user (teams)
+- [ ] Create health check endpoint with detailed system status
+
+
+
+
+
+
+
+- [ ] Build admin data export tool (CSV/JSON for analytics)
+- [ ] Set up public status page (uptime, incidents)
+- [ ] Extend dark mode to admin dashboard
+- [ ] Improve logging (structured, centralized)
+- [ ] Containerize app with Docker for local reproducibility
+
+
+- [ ] Implement server-sent events (SSE) for real-time admin notifications
+- [ ] Add multi-language support (i18n) for the UI
+- [ ] Create user feedback widget with sentiment analysis
+- [ ] Implement OAuth2 social login with additional providers (GitHub, Twitter)
+- [ ] Add automated regression testing for critical user flows
+- [ ] Implement offline-first PWA capabilities for the dashboard
+- [ ] Add two-factor authentication (2FA) for admin accounts
+- [ ] Create CLI for managing MVPs (list, deploy, delete)
+- [ ] Implement webhook signature verification hardening
+- [ ] Add request tracing (distributed tracing) for debugging
+
+
+
+- [ ] Create feature flag service for gradual rollouts
+- [ ] Implement per-tenant database isolation (multi-tenancy)
+- [ ] Add Stripe/Polar checkout retry and error pages
+- [ ] Build admin bulk operations (mass email, user actions)
+- [ ] Add automated regression testing for critical user flows
+- [ ] Implement server-sent events (SSE) for real-time admin notifications
+- [ ] Add multi-language support (i18n) for the UI
+- [ ] Create user feedback widget with sentiment analysis
+- [ ] Implement OAuth2 social login with additional providers (GitHub, Twitter)
+- [ ] Build automated security scanning (dependabot, Snyk integration)
+- [ ] Add export to PDF for invoices and receipts
+- [ ] Implement server-side caching strategy (Redis) for public API responses
+- [ ] Create offline-first PWA capabilities for the dashboard
+- [ ] Add two-factor authentication (2FA) for admin accounts
+
+
 - [ ] Implement payment retry logic and dunning management
 - [ ] Build admin audit logs for critical actions
 - [ ] Integrate Plausible analytics for product usage insights
@@ -39,8 +116,8 @@
 ## In Progress
 
 
-- [~] Set up GitHub repository and Vercel integration for autonomous deployments (need repo owner credentials)
-- [~] Automate deployment: push to GitHub → auto-deploy to Vercel for all MVPs (need Vercel account link)
+- [x] Set up GitHub repository and Vercel integration for autonomous deployments (need repo owner credentials)
+- [x] Automate deployment: push to GitHub → auto-deploy to Vercel for all MVPs (need Vercel account link)
 - [~] Create product pricing calculator: simple tool to determine optimal pricing based on costs and target margin
 - [~] Build AI-powered customer support chatbot for MVPs (using OpenRouter)
 - [~] Build email subscription capture + automated newsletter for audience building
@@ -57,6 +134,12 @@
 - [~] Integrate Resend email service for reliable newsletter delivery
 - [~] Build admin user management dashboard (view users, roles, quotas)
 - [~] Add feature flags for MVP gradual rollouts
+
+- [~] Implement performance monitoring with Lighthouse CI
+- [~] Create feature flag service for gradual rollouts
+- [~] Implement per-tenant database isolation (multi-tenancy)
+- [~] Add Stripe/Polar checkout retry and error pages
+- [~] Build admin bulk operations (mass email, user actions)
 
 ## Recently Completed
 

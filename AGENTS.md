@@ -210,3 +210,285 @@ The goal: Be helpful without being annoying. Check in a few times a day, do usef
 ## Make It Yours
 
 This is a starting point. Add your own conventions, style, and rules as you figure out what works.
+
+---
+
+## Plugin Development Guide
+
+OpenClaw's plugin system allows extending the platform with new skills, integrations, and features without modifying core code. Plugins are self-contained modules that can register API routes, admin pages, hooks, and more.
+
+### Overview
+
+A plugin consists of:
+- `plugin.json` (or `plugin.yaml`) - Manifest describing the plugin
+- `index.js` (or `index.ts`) - Main module exporting hooks and routes
+- Optional: admin UI components, database schemas, static assets
+
+Plugins are discovered in the `plugins/` directory at the project root or the path specified by `PLUGINS_DIR`.
+
+### Plugin Manifest
+
+The manifest is a JSON file with required fields:
+
+- `name` (string): Unique identifier (alphanumeric, dashes, underscores)
+- `version` (string): Semantic version (e.g., "1.0.0")
+- `author` (object): `{ name, email? }`
+- `hooks` (string[]): List of hook points implemented (e.g., `["onInit", "onStart"]`)
+- `permissions` (object): `{ roles: string[], adminOnly?: boolean }`
+- `configuration` (optional): Environment variable schema
+- `routes` (optional): API routes provided
+- `admin` (optional): Admin UI page definition
+- `webhooks` (optional): Webhook endpoints handled
+- `database` (optional): Schema files and migrations
+- `isolation` (optional): Worker isolation settings
+
+### Configuration Schema
+
+Plugins can declare configuration via environment variables:
+
+```json
+"configuration": {
+  "envPrefix": "MYPLUGIN",
+  "defaults": {
+    "api_key": {
+      "type": "string",
+      "description": "API key",
+      "required": true,
+      "sensitive": true
+    },
+    "max_items": {
+      "type": "number",
+      "description": "Maximum items to return",
+      "default": 50
+    }
+  }
+}
+```
+
+- `envPrefix`: Prepended to env var names (e.g., `MYPLUGIN_API_KEY`)
+- `type`: `"string"`, `"number"`, `"boolean"`, or `"json"`
+- `required`: If true and no default, must be set
+- `sensitive`: Hides value in admin UI
+
+The system automatically parses and validates these values during plugin load.
+
+### Hook Points
+
+Hooks allow plugins to react to system events:
+
+- `onInit`: Called after plugin is loaded. For config validation, one-time setup.
+- `onStart`: Called when plugin becomes enabled (after onInit). Start background tasks.
+- `onStop`: Called when plugin is disabled or unloaded. Clean up resources.
+- `onWebhook`: Handles incoming webhooks (declared in manifest.webhooks)
+- `onAdminMenu`: Extend admin navigation menu.
+- `onUserCreated`, `onUserDeleted`: React to user lifecycle.
+- `onSubscriptionCreated`, `onSubscriptionUpdated`: Billing events.
+- `onSchedule`: Execute scheduled cron tasks.
+- `beforeRoute`, `afterRoute`: Intercept API calls.
+- `onDatabaseInit`: Configure database connections.
+- `beforeMigration`, `afterMigration`: Migration hooks.
+
+Hooks are async functions receiving a context object:
+
+```ts
+async function myHook(context) {
+  const { logger, config, db, user, payload } = context;
+  // Do something
+}
+```
+
+Hooks can set `context.canProceed = false` to block actions or `context.stopPropagation = true` to halt further hook execution.
+
+Hook execution order is by `priority` (higher first), then registration order.
+
+### Route Definitions
+
+Plugins can expose API routes under `/api/plugins/:pluginName/*`:
+
+```json
+"routes": [
+  {
+    "path": "hello",
+    "method": "GET",
+    "handler": "routeHello",
+    "permissions": ["admin"]
+  }
+]
+```
+
+Handler functions receive a `RouteContext`:
+
+```ts
+async function routeHello(context) {
+  const { logger, config, req, user, params, query, body } = context;
+  return { status: 200, body: { message: "Hello" } };
+}
+```
+
+Or use the SDK's response helpers:
+
+```ts
+import { ok, unauthorized } from '@/lib/plugins/sdk';
+
+async function routeHello(context) {
+  if (!context.user) return unauthorized();
+  return ok({ message: 'Hello' });
+}
+```
+
+### Admin Pages
+
+Plugins can add UI to the admin area:
+
+```json
+"admin": {
+  "path": "/admin/plugins/my-plugin",
+  "title": "My Plugin",
+  "component": "./admin-page.tsx",
+  "icon": "Settings",
+  "permissions": ["admin"]
+}
+```
+
+The `component` is a React component file path relative to the plugin directory or absolute. Admin pages are automatically mounted at `/admin/plugins/:pluginName/*`.
+
+### Webhooks
+
+Declare webhook endpoints:
+
+```json
+"webhooks": [
+  {
+    "path": "stripe",
+    "secret": "env:STRIPE_WEBHOOK_SECRET"
+  }
+]
+```
+
+The system will verify signatures (if secret provided) and invoke the plugin's `onWebhook` hook. Alternatively, you can handle webhooks directly via a route; both can coexist.
+
+### Database Schema
+
+Plugins can provide Drizzle schema files:
+
+```json
+"database": {
+  "schemaFiles": ["schema.ts"],
+  "schemaName": "my_plugin",
+  "tablePrefix": "my_"
+}
+```
+
+The plugin's schema is merged with the core database on initialization.
+
+### Scheduling
+
+Define cron tasks in the manifest:
+
+```json
+"schedule": [
+  {
+    "cron": "0 2 * * *",
+    "name": "daily-reconcile"
+  }
+]
+```
+
+Then implement a handler in your plugin module with the same name (`daily-reconcile`). The system will invoke it according to the schedule.
+
+### Using the SDK
+
+The `@/lib/plugins/sdk` provides helpers:
+
+- `createPlugin(options)` - Builder to construct the plugin
+- `PluginBuilder.hook(point, fn, priority?)` - Add a hook
+- `PluginBuilder.route(definition)` - Add an API route
+- `PluginBuilder.adminPage(definition)` - Add admin page
+- `PluginBuilder.schedule(cron, name, handler)` - Add scheduled task
+- `PluginBuilder.webhook(path, handler, secret?)` - Add webhook
+- `ok(body)`, `badRequest(msg)`, `unauthorized()`, `internalError(msg)` - Response helpers
+- `createMigrationHelper(schema, name)` - Generate migration SQL
+
+Example pattern:
+
+```js
+import { createPlugin, ok } from '@/lib/plugins/sdk';
+
+function myRoute(context) {
+  return ok({ data: 'hello' });
+}
+
+function onInit(context) {
+  context.logger.info('Plugin ready');
+}
+
+const builder = createPlugin({
+  manifest: {
+    name: 'my-plugin',
+    version: '1.0.0',
+    author: { name: 'Me' },
+    hooks: ['onInit'],
+    permissions: { roles: ['admin'] }
+  }
+});
+
+builder.hook('onInit', onInit);
+builder.route({ path: 'data', method: 'GET', handler: myRoute });
+
+export default builder.build();
+```
+
+### Hot Reload
+
+During development, set `PLUGIN_HOT_RELOAD=true` to automatically reload plugins when files change. The system watches the plugins directory and performs a safe reload: `onStop` → unload → `onInit` → `onStart`. Errors are logged and do not crash the system.
+
+### Lifecycle Best Practices
+
+- Keep `onInit` lightweight; it runs on every load (including hot-reload).
+- Use `onStart` for expensive initialization (DB connections, external clients, intervals).
+- Clean up everything in `onStop` to avoid memory leaks during hot-reload.
+- Use `priority` to control hook execution order across plugins.
+- Always handle errors in hooks to prevent one plugin from breaking others.
+
+### Testing Plugins
+
+The plugin system is tested in `src/__tests__/plugins/`. Key test scenarios:
+
+- Registry operations (register, unregister, getEnabled)
+- Hook execution order and priority
+- Configuration resolution and validation
+- Error isolation (errors in one plugin don't crash others)
+
+To test a plugin manually, place it in the `plugins/` directory and restart the app (or enable hot-reload).
+
+### Example Plugins
+
+The repository includes example plugins:
+
+- `plugins/example-greeting` - Basic demo with routes, hooks, and admin page.
+- `plugins/stripe` - Stripe integration with webhooks.
+- `plugins/openai` - OpenAI API proxy for chat and embeddings.
+- `plugins/resend` - Transactional email via Resend.
+
+Study these for patterns.
+
+### Debugging
+
+Each plugin has its own logger: `context.logger`. Logs are prefixed with plugin name and appear in the main application logs. Use `context.logger.info/debug/warn/error`.
+
+The admin UI (`/admin/plugins`) lists loaded plugins, their status, and any errors.
+
+### Security
+
+- Plugins run with the same privileges as the host application. Validate all inputs and use least-privilege permissions.
+- Sensitive configuration should be marked `"sensitive": true` to prevent exposure in logs or admin UI.
+- Route permissions enforce access control based on user roles.
+- Webhook secrets should be stored in environment variables, not in the manifest.
+
+### Distribution
+
+Plugins are simply directories that can be packaged and shared. To install, copy the plugin folder to `plugins/` and ensure required dependencies are available in the host environment. In the future, a plugin marketplace is planned.
+
+---
+
+This guide covers the essentials. For more details, refer to the source code in `src/lib/plugins/`.

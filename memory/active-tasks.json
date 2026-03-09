@@ -59,6 +59,254 @@
       "description": "Implement CI/CD with GitHub Actions (full pipeline)",
       "status": "running",
       "spawnedAt": 1741482000000
+    },
+    {
+      "id": "DEPLOY-001",
+      "description": "Automate deployment: push to GitHub → auto-deploy to Vercel for all MVPs (need Vercel account link)",
+      "status": "running",
+      "spawnedAt": 1741482000000
+    },
+    {
+      "id": "PERFORMANCE-001",
+      "description": "Implement performance monitoring with Lighthouse CI",
+      "status": "running",
+      "spawnedAt": 1741482000000
+    },
+    {
+      "id": "FEATUREFLAGS-001",
+      "description": "Create feature flag service for gradual rollouts",
+      "status": "running",
+      "spawnedAt": 1741482000000
+    },
+    {
+      "id": "MULTITENANCY-001",
+      "description": "Implement per-tenant database isolation (multi-tenancy)",
+      "status": "running",
+      "spawnedAt": 1741482000000
+    },
+    {
+      "id": "CHECKOUTRETRY-001",
+      "description": "Add Stripe/Polar checkout retry and error pages",
+      "status": "running",
+      "spawnedAt": 1741482000000
+    },
+    {
+      "id": "BULKOPS-001",
+      "description": "Build admin bulk operations (mass email, user actions)",
+      "status": "running",
+      "spawnedAt": 1741482000000
+    },
+    {
+      "id": "KANBAN-REWRITE-001",
+      "description": "Rewrite Kanban board for performance and reliability",
+      "status": "running",
+      "spawnedAt": 1741485600000
+    },
+    {
+      "id": "KANBAN-READONLY-001",
+      "description": "Make Kanban board read-only (prevent manual overrides)",
+      "status": "running",
+      "spawnedAt": 1741485600000
+    },
+    {
+      "id": "CACHE-001",
+      "description": "Implement server-side caching strategy (Redis) for public API responses",
+      "status": "running",
+      "spawnedAt": 1741485600000
+    },
+    {
+      "id": "SECURITY-001",
+      "description": "Build automated security scanning (dependabot, Snyk integration)",
+      "status": "running",
+      "spawnedAt": 1741485600000
+    },
+    {
+      "id": "PDF-001",
+      "description": "Implement export to PDF for invoices and receipts",
+      "status": "running",
+      "spawnedAt": 1741485600000
+    },
+    {
+      "id": "SSE-001",
+      "description": "Implement server-sent events (SSE) for real-time admin notifications",
+      "status": "running",
+      "spawnedAt": 1741488600000
+    },
+    {
+      "id": "I18N-001",
+      "description": "Add multi-language support (i18n) for the UI",
+      "status": "running",
+      "spawnedAt": 1741488600000
+    },
+    {
+      "id": "FEEDBACK-001",
+      "description": "Create user feedback widget with sentiment analysis",
+      "status": "running",
+      "spawnedAt": 1741488600000
+    },
+    {
+      "id": "SOCIALLOGIN-001",
+      "description": "Implement OAuth2 social login with additional providers (GitHub, Twitter)",
+      "status": "running",
+      "spawnedAt": 1741488600000
+    },
+    {
+      "id": "REGRESSION-001",
+      "description": "Add automated regression testing for critical user flows",
+      "status": "running",
+      "spawnedAt": 1741488600000
+    },
+    {
+      "id": "COLDSTART-001",
+      "description": "Optimize Vercel serverless functions (cold start mitigation)",
+      "status": "running",
+      "spawnedAt": 1741490600000
+    },
+    {
+      "id": "GRAPHQL-001",
+      "description": "Add GraphQL API layer (alternative to REST)",
+      "status": "running",
+      "spawnedAt": 1741490600000
+    },
+    {
+      "id": "JOBPRIORITY-001",
+      "description": "Implement background job prioritization and queues",
+      "status": "running",
+      "spawnedAt": 1741490600000
+    },
+    {
+      "id": "ERRORPAGES-001",
+      "description": "Design better error pages (404, 500) with branding",
+      "status": "running",
+      "spawnAt": 1741490600000,
+      "status": "running",
+      "spawnedAt": 1741490600000
+    },
+    {
+      "id": "MIGRATEMYSQL-001",
+      "description": "Create MySQL to Neon migration tool for legacy data",
+      "status": "running",
+      "spawnedAt": 1741490600000
+    },
+    {
+      "id": "TRACING-001",
+      "description": "Implement request tracing (distributed tracing) for debugging",
+      "status": "running",
+      "spawnedAt": 1741491000000
+    },
+    {
+      "id": "PWA-001",
+      "description": "Add offline-first PWA capabilities for the dashboard",
+      "status": "running",
+      "spawnedAt": 1741491000000
+    },
+    {
+      "id": "2FA-001",
+      "description": "Implement two-factor authentication (2FA) for admin accounts",
+      "status": "running",
+      "spawnedAt": 1741491000000
+    },
+    {
+      "id": "CLIADMIN-001",
+      "description": "Create CLI for managing MVPs (list, deploy, delete)",
+      "status": "running",
+      "spawnedAt": 1741491000000
+    },
+    {
+      "id": "WEBHOOKSEC-001",
+      "description": "Implement webhook signature verification hardening",
+      "status": "running",
+      "spawnedAt": 1741491000000
+    },
+    {
+      "id": "OPENMETRICS-001",
+      "description": "Add OpenTelemetry collector for centralized traces",
+      "status": "running",
+      "spawnedAt": 1741494000000
+    },
+    {
+      "id": "COSTMON-001",
+      "description": "Implement cost monitoring and alerts (Vercel/OpenRouter spend)",
+      "status": "running",
+      "spawnedAt": 1741494000000
+    },
+    {
+      "id": "FORMATTING-001",
+      "description": "Add automated code formatting (Prettier) in CI",
+      "status": "running",
+      "spawnedAt": 1741494000000
+    },
+    {
+      "id": "TYPES-001",
+      "description": "Improve TypeScript strictness and type coverage",
+      "status": "running",
+      "spawnedAt": 1741494000000
+    },
+    {
+      "id": "DEPENDENCY-001",
+      "description": "Set up automated dependency updates (Dependabot)",
+      "status": "running",
+      "spawnedAt": 1741494000000
+    },
+    {
+      "id": "NEXTJS16-001",
+      "description": "Upgrade to Next.js 16 (Vercel recommendation)",
+      "status": "running",
+      "spawnedAt": 1741497600000
+    },
+    {
+      "id": "TERRAFORM-001",
+      "description": "Implement Terraform for infrastructure as code (AWS/Neon/Vercel)",
+      "status": "running",
+      "spawnedAt": 1741497600000
+    },
+    {
+      "id": "AUDITRETENTION-001",
+      "description": "Add audit log retention policies and archiving",
+      "status": "running",
+      "spawnedAt": 1741497600000
+    },
+    {
+      "id": "CACHING-001",
+      "description": "Implement advanced caching strategies (stale‑while‑revalidate)",
+      "status": "running",
+      "spawnedAt": 1741497600000
+    },
+    {
+      "id": "PAYMENTPROVIDERS-001",
+      "description": "Add support for multiple payment providers (Stripe, Polar, PayPal)",
+      "status": "running",
+      "spawnedAt": 1741497600000
+    },
+    {
+      "id": "PLUGIN-001",
+      "description": "Build Plugin System for Extensibility",
+      "status": "running",
+      "spawnedAt": 1741495200000
+    },
+    {
+      "id": "SDK-001",
+      "description": "Internal SDK for Micro-SaaS Modules",
+      "status": "running",
+      "spawnedAt": 1741495200000
+    },
+    {
+      "id": "CUSTOMDOMAINS-001",
+      "description": "Support Custom Domains Per MVP",
+      "status": "running",
+      "spawnedAt": 1741495200000
+    },
+    {
+      "id": "DOCGEN-001",
+      "description": "Automated Documentation from Code",
+      "status": "running",
+      "spawnedAt": 1741495200000
+    },
+    {
+      "id": "TEMPLATES-001",
+      "description": "GitHub Actions Templates for CI/CD Standardization",
+      "status": "running",
+      "spawnedAt": 1741495200000
     }
   ]
 }
